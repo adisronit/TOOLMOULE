@@ -27,12 +27,31 @@
         <button class="btn btn-primary" @click="onConfirm">Confirm</button>
       </template>
     </BaseModal>
+
+    <div class="mt-4">
+      <h4>Advanced (Multi Select with Search)</h4>
+      <div class="mb-3 row">
+        <div class="col-sm-6">
+          <AdvancedDropdown
+            v-model="selectedCountries"
+            :options="countries"
+            label="Select Country"
+            value-field="code"
+            text-field="description"
+            multi
+            :searchable="true"
+          />
+          <p class="mt-2">Selected: {{ selectedCountries }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import BaseModal from '@/components/BaseModal.vue'
+import AdvancedDropdown from '@/components/BaseSelect.vue'
 
 const modalRef = ref(null)
 
@@ -40,4 +59,13 @@ function onConfirm() {
   alert('Confirmed from HomeView ✅')
   modalRef.value.closeModal()
 }
+
+const selectedCountries = ref([])
+
+const countries = [
+  { code: 'us', description: 'United States' },
+  { code: 'th', description: 'Thailand' },
+  { code: 'jp', description: 'Japan', disabled: true }, // disabled example
+  { code: 'fr', description: 'France' },
+]
 </script>
