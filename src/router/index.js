@@ -8,6 +8,7 @@ import CalendarView from '@/views/plan/CalendarView.vue'
 import TimelineView from '@/views/plan/TimelineView.vue'
 import AddSupplierView from '@/views/supplier/AddSupplierView.vue'
 import AddCustomerView from '@/views/customer/AddCustomerView.vue'
+import WorkOrderView from '@/views/worker/WorkOrderView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
@@ -28,6 +29,7 @@ const routes = [
       { path: 'timeline', component: TimelineView },
       { path: 'supplier/add', component: AddSupplierView },
       { path: 'customer/add', component: AddCustomerView },
+      { path: 'work-order', component: WorkOrderView },
     ],
   },
 ]

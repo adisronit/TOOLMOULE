@@ -61,6 +61,16 @@
             </a>
           </li>
           <li class="nav-item">
+            <a
+              href="/work-order"
+              class="nav-link"
+              :class="{ active: $route.path === '/work-order' }"
+            >
+              <i class="nav-icon bi bi-hand-thumbs-up-fill"></i>
+              <p>Work Order</p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
               <i class="nav-icon bi bi-hand-thumbs-up-fill"></i>
               <p>About</p>
