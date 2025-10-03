@@ -106,6 +106,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="/shift" class="nav-link" :class="{ active: $route.path === '/shift' }">
+                  <i class="nav-icon bi bi-circle"></i>
+                  <p>Shift</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a
                   href="/supplier/add"
                   class="nav-link"
