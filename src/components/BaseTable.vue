@@ -85,6 +85,7 @@ onMounted(() => {
       [25, 50, 100],
       [25, 50, 100],
     ],
+    //dom: "<top'f>rft<bottom'p><'clear'>",
   })
 })
 
