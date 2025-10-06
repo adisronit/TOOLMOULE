@@ -18,7 +18,13 @@
     <div class="mb-3 d-flex justify-content-end">
       <button class="btn btn-primary" @click="modalRef.openModal()">Add New Shift</button>
     </div>
-    <BaseTable :columns="columns" :data="data" :show-checkbox="false" :page-length="25" />
+    <BaseTable
+      :columns="columns"
+      :data="data"
+      :show-checkbox="true"
+      show-export="true"
+      :page-length="25"
+    />
   </div>
 
   <BaseModal ref="modalRef" title="Add/Edit Shift" size="md">
@@ -54,15 +60,14 @@ import { ref } from 'vue'
 import BaseTable from '@/components/BaseTable.vue'
 import BaseModal from '@/components/BaseModal.vue'
 const columns = [
-  { key: 'No', label: 'No' },
   { key: 'Description', label: 'Description' },
   { key: 'Start', label: 'Start' },
   { key: 'Finish', label: 'Finish' },
 ]
 
 const data = [
-  { No: 1, Description: 'Normal Shift', Start: '08:00', Finish: '17:00' },
-  { No: 2, Description: 'Overtime Shift', Start: '17:30', Finish: '20:00' },
+  { Description: 'Normal Shift', Start: '08:00', Finish: '17:00' },
+  { Description: 'Overtime Shift', Start: '17:30', Finish: '20:00' },
 ]
 
 const modalRef = ref(null)

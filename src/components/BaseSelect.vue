@@ -2,30 +2,37 @@
   <div class="tag-dropdown">
     <label v-if="label">{{ label }}</label>
 
-    <!-- Selected tags -->
-    <div class="selected-tags" v-if="multi && selected.length">
-      <span class="tag" v-for="val in selected" :key="val">
-        {{ getText(val) }}
-        <button class="tag-remove" @click="removeTag(val)">×</button>
+    <div class="dropdown-box" @click="toggleDropdown">
+      <!-- Selected tags -->
+      <div v-if="multi && selectedItems.length" class="selected-tags">
+        <span v-for="(item, index) in selectedItems" :key="index" class="tag">
+          {{ item[textField] }}
+          <button class="tag-remove" @click.stop="removeTag(item)">×</button>
+        </span>
+      </div>
+
+      <!-- Single selected item -->
+      <span v-else-if="!multi && selectedItems.length" class="single-selected">
+        {{ selectedItems[0][textField] }}
       </span>
-      <button class="clear-all" @click="clearAll">Clear All</button>
+
+      <input
+        v-if="searchable"
+        v-model="search"
+        placeholder="Search..."
+        class="dropdown-input"
+        @focus="isOpen = true"
+      />
+      <span v-if="!selectedItems.length && !search" class="placeholder">Select...</span>
     </div>
 
-    <!-- Search input -->
-    <input
-      v-if="searchable"
-      type="text"
-      v-model="search"
-      placeholder="Search..."
-      class="dropdown-search"
-    />
-
-    <!-- Options list -->
-    <div class="options">
+    <!-- Options dropdown -->
+    <div v-if="isOpen" class="dropdown-options">
       <div
         v-for="option in filteredOptions"
         :key="option[valueField]"
-        :class="['option-item', { selected: isSelected(option), disabled: option.disabled }]"
+        class="option-item"
+        :class="{ selected: isSelected(option), disabled: option.disabled }"
         @click="toggleOption(option)"
       >
         <input
@@ -36,12 +43,15 @@
         />
         {{ option[textField] }}
       </div>
+      <div v-if="multi && selectedItems.length" class="clear-section">
+        <button class="btn-clear" @click.stop="clearAll">Clear All</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 
 const props = defineProps({
   modelValue: [String, Number, Array],
@@ -54,10 +64,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-
 const search = ref('')
-
-// selected values
+const isOpen = ref(false)
 const selected = ref(props.multi ? [...(props.modelValue || [])] : props.modelValue)
 
 watch(
@@ -67,6 +75,13 @@ watch(
   },
 )
 
+const selectedItems = computed(() => {
+  if (props.multi) {
+    return props.options.filter((opt) => selected.value.includes(opt[props.valueField]))
+  }
+  return props.options.filter((opt) => opt[props.valueField] === selected.value)
+})
+
 const filteredOptions = computed(() => {
   if (!search.value) return props.options
   return props.options.filter((opt) =>
@@ -75,8 +90,9 @@ const filteredOptions = computed(() => {
 })
 
 function isSelected(option) {
-  if (props.multi) return selected.value.includes(option[props.valueField])
-  return selected.value === option[props.valueField]
+  return props.multi
+    ? selected.value.includes(option[props.valueField])
+    : selected.value === option[props.valueField]
 }
 
 function toggleOption(option) {
@@ -93,11 +109,12 @@ function toggleOption(option) {
   } else {
     selected.value = option[props.valueField]
     emit('update:modelValue', selected.value)
+    isOpen.value = false
   }
 }
 
-function removeTag(val) {
-  selected.value = selected.value.filter((i) => i !== val)
+function removeTag(item) {
+  selected.value = selected.value.filter((v) => v !== item[props.valueField])
   emit('update:modelValue', [...selected.value])
 }
 
@@ -106,30 +123,59 @@ function clearAll() {
   emit('update:modelValue', [])
 }
 
-function getText(val) {
-  const opt = props.options.find((o) => o[props.valueField] === val)
-  return opt ? opt[props.textField] : val
+function toggleDropdown() {
+  isOpen.value = !isOpen.value
 }
+
+function handleClickOutside(e) {
+  if (!e.target.closest('.tag-dropdown')) {
+    isOpen.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('click', handleClickOutside))
+onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 </script>
 
 <style scoped>
 .tag-dropdown {
+  position: relative;
+  width: 260px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.dropdown-box {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  background: white;
+  min-height: 40px;
   display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-  width: 300px;
+  align-items: center;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
+
+.placeholder {
+  color: #aaa;
+}
+
+.dropdown-input {
+  border: none;
+  outline: none;
+  flex: 1;
+  padding: 2px;
 }
 
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 5px;
   gap: 5px;
 }
 
 .tag {
   background-color: #007bff;
-  color: #fff;
+  color: white;
   padding: 2px 6px;
   border-radius: 4px;
   display: flex;
@@ -137,43 +183,35 @@ function getText(val) {
 }
 
 .tag-remove {
-  margin-left: 4px;
+  margin-left: 5px;
   border: none;
   background: transparent;
-  color: #fff;
+  color: white;
   cursor: pointer;
 }
 
-.clear-all {
-  margin-left: auto;
-  border: none;
-  background: #f44336;
-  color: #fff;
-  border-radius: 4px;
-  padding: 2px 6px;
-  cursor: pointer;
-}
-
-.dropdown-search {
+.dropdown-options {
+  position: absolute;
+  background: white;
   width: 100%;
-  padding: 4px 8px;
-  margin-bottom: 5px;
-  border-radius: 4px;
-  border: 1px solid #aaa;
-}
-
-.options {
   border: 1px solid #ccc;
   border-radius: 6px;
-  max-height: 150px;
+  z-index: 1000;
+  max-height: 200px;
   overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
 }
 
 .option-item {
-  padding: 5px 8px;
+  padding: 6px 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
+}
+
+.option-item:hover {
+  background-color: #f5f5f5;
 }
 
 .option-item.selected {
@@ -186,7 +224,21 @@ function getText(val) {
   cursor: not-allowed;
 }
 
-.option-item input {
-  margin-right: 5px;
+.clear-section {
+  text-align: center;
+  border-top: 1px solid #eee;
+  padding: 6px;
+}
+
+.btn-clear {
+  background-color: #f87171;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.btn-clear:hover {
+  background-color: #dc2626;
 }
 </style>

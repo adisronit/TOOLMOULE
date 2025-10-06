@@ -1,4 +1,10 @@
 <template>
+  <!-- Toolbar -->
+  <div class="toolbar mb-3" v-if="showExport">
+    <button class="btn btn-secondary me-2" @click="exportCSV">Export CSV</button>
+    <button class="btn btn-secondary me-2" @click="exportExcel">Export Excel</button>
+  </div>
+  <!-- DataTable -->
   <table ref="tableRef" class="display stripe hover">
     <thead>
       <tr>
@@ -47,6 +53,7 @@ const props = defineProps({
     default: false,
   },
   pageLength: { type: Number, default: 25 },
+  showExport: { type: Boolean, default: false },
 })
 
 const tableRef = ref(null)
@@ -80,6 +87,31 @@ onMounted(() => {
     ],
   })
 })
+
+// ✅ Export CSV
+function exportCSV() {
+  const csvRows = []
+  const headers = props.columns.map((col) => col.label)
+  csvRows.push(headers.join(','))
+  props.data.forEach((row) => {
+    const values = props.columns.map((col) => `"${row[col.key]}"`)
+    csvRows.push(values.join(','))
+  })
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.setAttribute('hidden', '')
+  a.setAttribute('href', url)
+  a.setAttribute('download', 'data.csv')
+  a.click()
+  window.URL.revokeObjectURL(url)
+}
+
+// ✅ Export Excel
+function exportExcel() {
+  exportCSV()
+}
+
 // expose selected rows to parent
 defineExpose({ selectedRows })
 </script>
